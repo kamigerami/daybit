@@ -1,0 +1,39 @@
+/* Custom styles for cal-heatmap */
+.ch-domain-text {
+  fill: #374151 !important; /* Dark gray for better contrast */
+  font-weight: 600 !important;
+  font-size: 12px !important;
+}
+
+.ch-subdomain-bg {
+  fill: #ebedf0 !important; /* Light gray for empty days */
+  stroke: #ffffff !important;
+  stroke-width: 1px !important;
+}
+
+/* Override cal-heatmap default colors */
+.ch-subdomain-bg[data-value="0"] {
+  fill: #ebedf0 !important; /* Light gray for no data */
+}
+
+.ch-subdomain-bg[data-value="1"] {
+  fill: #c6e48b !important; /* Light green for data */
+}
+
+/* Ensure month labels are visible */
+.ch-domain .ch-domain-text {
+  fill: #374151 !important;
+  font-weight: 600 !important;
+  font-size: 11px !important;
+}
+
+/* Fix for any text visibility issues */
+.heatmap-container text {
+  fill: #374151 !important;
+  font-weight: 500 !important;
+}
+
+/* Better spacing */
+.ch-domain {
+  margin: 0 2px !important;
+}
