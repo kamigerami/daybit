@@ -18,9 +18,9 @@ export const metadata: Metadata = {
   keywords: ["daily tracking", "mood tracker", "journal", "heatmap", "productivity"],
   authors: [{ name: "DayBit" }],
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
-    apple: "/favicon.svg",
+    icon: "/daybit_icon.png",
+    shortcut: "/daybit_icon.png",
+    apple: "/daybit_icon.png",
   },
   viewport: "width=device-width, initial-scale=1",
   themeColor: "#10B981",
