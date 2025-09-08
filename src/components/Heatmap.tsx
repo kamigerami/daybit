@@ -1,40 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import CalendarHeatmap from 'react-calendar-heatmap';
+import 'react-calendar-heatmap/dist/styles.css';
+import '../styles/heatmap.css';
 import { type DayEntry } from '@/lib/storage';
+import { useState } from 'react';
 
 interface HeatmapProps {
   entries: DayEntry[];
 }
-
-// Generate days for the last 12 months (like GitHub)
-const generateLast12Months = () => {
-  const days = [];
-  const today = new Date();
-  
-  // Start from exactly 365 days ago (like GitHub)
-  const startDate = new Date(today);
-  startDate.setDate(today.getDate() - 364); // 365 days total including today
-  
-  // End today
-  const endDate = new Date(today);
-  
-  // Start from the Sunday before the start date to align weeks properly
-  const firstSunday = new Date(startDate);
-  firstSunday.setDate(startDate.getDate() - startDate.getDay());
-  
-  // End at the Saturday after today to complete the week
-  const lastSaturday = new Date(endDate);
-  lastSaturday.setDate(endDate.getDate() + (6 - endDate.getDay()));
-  
-  const current = new Date(firstSunday);
-  while (current <= lastSaturday) {
-    days.push(new Date(current));
-    current.setDate(current.getDate() + 1);
-  }
-  
-  return days;
-};
 
 const calculateStreak = (date: Date, entries: DayEntry[]): number => {
   const dateStr = date.toISOString().split('T')[0];
@@ -73,22 +47,7 @@ const getIntensity = (date: Date, entries: DayEntry[]): number => {
   return 4;                         // Long streak (8+ days)
 };
 
-const getIntensityColor = (intensity: number): string => {
-  switch (intensity) {
-    case 0: return '#ebedf0';  // No entry - gray
-    case 1: return '#9be9a8';  // 1 day - light green
-    case 2: return '#40c463';  // 2-3 days - medium light green
-    case 3: return '#30a14e';  // 4-7 days - medium dark green
-    case 4: return '#216e39';  // 8+ days - dark green
-    default: return '#ebedf0';
-  }
-};
-
-const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
 export default function Heatmap({ entries }: HeatmapProps) {
-  const [yearDays, setYearDays] = useState<Date[]>([]);
   const [tooltipData, setTooltipData] = useState<{ date: Date; word?: string; streak?: number; visible: boolean; x: number; y: number }>({
     date: new Date(),
     visible: false,
@@ -97,18 +56,81 @@ export default function Heatmap({ entries }: HeatmapProps) {
     y: 0
   });
 
-  useEffect(() => {
-    setYearDays(generateLast12Months());
-  }, []);
+  // Calculate start date (365 days ago)
+  const today = new Date();
+  const startDate = new Date(today);
+  startDate.setDate(today.getDate() - 364); // 365 days total including today
 
-  const handleMouseEnter = (date: Date, event: React.MouseEvent) => {
-    const dateStr = date.toISOString().split('T')[0];
-    const entry = entries.find(e => e.date === dateStr);
-    const streak = entry ? calculateStreak(date, entries) : 0;
+  // Convert entries to react-calendar-heatmap format
+  const heatmapData = entries.map(entry => {
+    const date = new Date(entry.date);
+    const intensity = getIntensity(date, entries);
+    
+    return {
+      date: entry.date, // Keep as YYYY-MM-DD format
+      count: intensity,
+      word: entry.word
+    };
+  });
+
+  // Custom class function for colors
+  const classForValue = (value: any) => {
+    if (!value) {
+      return 'color-empty';
+    }
+    return `color-scale-${value.count}`;
+  };
+
+  // Custom title function for tooltips
+  const titleForValue = (value: any) => {
+    // For react-calendar-heatmap, empty squares don't have a value but the library
+    // handles this internally - we'll focus on valid values only
+    if (!value || !value.date) {
+      return null; // Let the library handle empty squares
+    }
+    
+    const actualDate = new Date(value.date);
+    // Validate the date
+    if (isNaN(actualDate.getTime())) {
+      return null;
+    }
+    
+    const formattedDate = actualDate.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+    
+    const entry = entries.find(e => e.date === value.date);
+    
+    if (!entry) {
+      return `${formattedDate}\nNo entry`;
+    }
+    
+    const streak = calculateStreak(actualDate, entries);
+    return `${formattedDate}\n${entry.word}${streak > 1 ? ` • ${streak} day streak` : ''}`;
+  };
+
+  const handleMouseEnter = (event: React.MouseEvent, value: any) => {
+    // For empty squares, react-calendar-heatmap passes null value
+    // We need to calculate the date from the square's position
+    if (!value || !value.date) {
+      return; // Don't show tooltip for empty squares for now
+    }
+    
     const rect = event.currentTarget.getBoundingClientRect();
+    const actualDate = new Date(value.date);
+    
+    // Validate the date
+    if (isNaN(actualDate.getTime())) {
+      return;
+    }
+    
+    const entry = entries.find(e => e.date === value.date);
+    const streak = entry ? calculateStreak(actualDate, entries) : 0;
     
     setTooltipData({
-      date,
+      date: actualDate,
       word: entry?.word,
       streak,
       visible: true,
@@ -121,45 +143,6 @@ export default function Heatmap({ entries }: HeatmapProps) {
     setTooltipData(prev => ({ ...prev, visible: false }));
   };
 
-  // Group days by weeks
-  const weeks: Date[][] = [];
-  for (let i = 0; i < yearDays.length; i += 7) {
-    weeks.push(yearDays.slice(i, i + 7));
-  }
-
-  // Get month labels positioned above their corresponding weeks (GitHub style)
-  const getMonthLabels = () => {
-    const labels: { month: string; colIndex: number }[] = [];
-    let lastMonth = -1;
-    
-    weeks.forEach((week, weekIndex) => {
-      // Find the first day of the week that represents a new month
-      for (const day of week) {
-        const currentMonth = day.getMonth();
-        
-        // If this is a new month and it's the first week of that month (day <= 7)
-        if (currentMonth !== lastMonth && day.getDate() <= 7) {
-          const monthName = months[currentMonth];
-          
-          // Only add if we have enough space (at least 2 weeks from last label)
-          const lastLabel = labels[labels.length - 1];
-          if (!lastLabel || weekIndex - lastLabel.colIndex >= 2) {
-            labels.push({ 
-              month: monthName, 
-              colIndex: weekIndex 
-            });
-            lastMonth = currentMonth;
-            break;
-          }
-        }
-      }
-    });
-    
-    return labels;
-  };
-
-  const monthLabels = getMonthLabels();
-
   return (
     <div className="w-full mb-8">
       <div className="bg-white p-4 rounded-lg border shadow-sm">
@@ -169,74 +152,19 @@ export default function Heatmap({ entries }: HeatmapProps) {
         
         <div className="overflow-x-auto pb-2">
           <div className="flex justify-center">
-            <div className="inline-block" style={{ minWidth: '650px' }}>
-            {/* Month labels */}
-            <div className="relative flex mb-3 ml-4 md:ml-6 lg:ml-8">
-              {monthLabels.map(({ month, colIndex }) => (
-                <div
-                  key={`${month}-${colIndex}`}
-                  className="absolute text-xs md:text-sm lg:text-base text-gray-600 font-medium"
-                  style={{
-                    left: `${colIndex * 15}px`, // Adjusted empirical spacing for better alignment
-                    top: 0,
-                  }}
-                >
-                  {month}
-                </div>
-              ))}
-            </div>
-            
-            <div className="flex">
-              {/* Day labels */}
-              <div className="flex flex-col mr-1 md:mr-2 lg:mr-3">
-                {days.map((day, index) => (
-                  <div key={day} className="h-2 md:h-3 lg:h-3.5 mb-px md:mb-0.5 lg:mb-1 flex items-center">
-                    {(index === 0 || index === 2 || index === 4 || index === 6) && (
-                      <span className="text-xs md:text-sm text-gray-500 w-4 md:w-6 lg:w-8 text-right pr-1">
-                        {day}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-              
-              {/* Heatmap grid */}
-              <div className="flex gap-px md:gap-0.5 lg:gap-1">
-                {weeks.map((week, weekIndex) => {
-                  // Add extra spacing after weeks that end a month
-                  const isMonthEnd = week.some(date => {
-                    const nextWeek = weeks[weekIndex + 1];
-                    if (!nextWeek) return false;
-                    return date.getMonth() !== nextWeek[0].getMonth();
-                  });
-                  
-                  return (
-                    <div key={weekIndex} className={`flex flex-col gap-px md:gap-0.5 lg:gap-1 ${isMonthEnd ? 'mr-px md:mr-1 lg:mr-1.5' : ''}`}>
-                      {week.map((date, dayIndex) => {
-                        const intensity = getIntensity(date, entries);
-                        const today = new Date();
-                        const isToday = date.toDateString() === today.toDateString();
-                        
-                        return (
-                          <div
-                            key={`${weekIndex}-${dayIndex}`}
-                            className={`w-2 h-2 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 rounded-sm cursor-pointer transition-all duration-200 hover:ring-1 md:hover:ring-2 hover:ring-gray-400 ${
-                              isToday ? 'ring-1 md:ring-2 ring-blue-400' : ''
-                            }`}
-                            style={{
-                              backgroundColor: getIntensityColor(intensity),
-                            }}
-                            onMouseEnter={(e) => handleMouseEnter(date, e)}
-                            onMouseLeave={handleMouseLeave}
-                            title={`${date.toLocaleDateString()} - ${entries.find(e => e.date === date.toISOString().split('T')[0])?.word || 'No entry'}`}
-                          />
-                        );
-                      })}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            <div className="inline-block heatmap-container" style={{ minWidth: '650px' }}>
+              <CalendarHeatmap
+                startDate={startDate}
+                endDate={today}
+                values={heatmapData}
+                classForValue={classForValue}
+                titleForValue={titleForValue}
+                showMonthLabels={true}
+                showWeekdayLabels={['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']}
+                horizontal={true}
+                onMouseOver={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+              />
             </div>
           </div>
         </div>
@@ -246,27 +174,27 @@ export default function Heatmap({ entries }: HeatmapProps) {
           <span>Less</span>
           <div className="flex gap-1 md:gap-1.5 lg:gap-2 items-center">
             <div 
-              className="w-2 h-2 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 rounded-sm" 
+              className="w-3.5 h-3.5 rounded-sm" 
               style={{ backgroundColor: '#ebedf0' }}
               title="No entries"
             ></div>
             <div 
-              className="w-2 h-2 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 rounded-sm" 
+              className="w-3.5 h-3.5 rounded-sm" 
               style={{ backgroundColor: '#9be9a8' }}
               title="1 day streak"
             ></div>
             <div 
-              className="w-2 h-2 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 rounded-sm" 
+              className="w-3.5 h-3.5 rounded-sm" 
               style={{ backgroundColor: '#40c463' }}
               title="2-3 day streak"
             ></div>
             <div 
-              className="w-2 h-2 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 rounded-sm" 
+              className="w-3.5 h-3.5 rounded-sm" 
               style={{ backgroundColor: '#30a14e' }}
               title="4-7 day streak"
             ></div>
             <div 
-              className="w-2 h-2 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 rounded-sm" 
+              className="w-3.5 h-3.5 rounded-sm" 
               style={{ backgroundColor: '#216e39' }}
               title="8+ day streak"
             ></div>
@@ -275,7 +203,7 @@ export default function Heatmap({ entries }: HeatmapProps) {
         </div>
       </div>
       
-      {/* Tooltip */}
+      {/* Custom Tooltip */}
       {tooltipData.visible && (
         <div
           className="fixed z-50 bg-gray-900 text-white px-2 py-1 rounded text-xs pointer-events-none transform -translate-x-1/2 -translate-y-full"

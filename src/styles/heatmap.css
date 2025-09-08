@@ -1,0 +1,49 @@
+/* Custom heatmap styles to match GitHub contribution graph */
+.heatmap-container .react-calendar-heatmap {
+  font-family: inherit;
+}
+
+.heatmap-container .react-calendar-heatmap .color-empty {
+  fill: #ebedf0;
+}
+
+.heatmap-container .react-calendar-heatmap .color-scale-1 {
+  fill: #9be9a8;
+}
+
+.heatmap-container .react-calendar-heatmap .color-scale-2 {
+  fill: #40c463;
+}
+
+.heatmap-container .react-calendar-heatmap .color-scale-3 {
+  fill: #30a14e;
+}
+
+.heatmap-container .react-calendar-heatmap .color-scale-4 {
+  fill: #216e39;
+}
+
+/* Month labels styling */
+.heatmap-container .react-calendar-heatmap text {
+  font-size: 12px;
+  fill: #666;
+  font-family: inherit;
+}
+
+/* Hover effects */
+.heatmap-container .react-calendar-heatmap rect {
+  cursor: pointer;
+  transition: stroke-width 0.2s;
+}
+
+.heatmap-container .react-calendar-heatmap rect:hover {
+  stroke: #666;
+  stroke-width: 1px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .heatmap-container .react-calendar-heatmap text {
+    font-size: 10px;
+  }
+}
