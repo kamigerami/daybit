@@ -169,15 +169,15 @@ export default function Heatmap({ entries }: HeatmapProps) {
         
         <div className="overflow-x-auto pb-2">
           <div className="flex justify-center">
-            <div className="inline-block" style={{ minWidth: '580px' }}>
+            <div className="inline-block" style={{ minWidth: '650px' }}>
             {/* Month labels */}
-            <div className="relative flex mb-3 ml-4 sm:ml-6">
+            <div className="relative flex mb-3 ml-4 md:ml-6 lg:ml-8">
               {monthLabels.map(({ month, colIndex }) => (
                 <div
                   key={`${month}-${colIndex}`}
-                  className="absolute text-xs sm:text-sm text-gray-600 font-medium"
+                  className="absolute text-xs md:text-sm lg:text-base text-gray-600 font-medium"
                   style={{
-                    left: `${colIndex * 9}px`, // 8px square + 1px gap for mobile consistency
+                    left: `${colIndex * 11}px`, // Averaged spacing that works across breakpoints
                     top: 0,
                   }}
                 >
@@ -188,11 +188,11 @@ export default function Heatmap({ entries }: HeatmapProps) {
             
             <div className="flex">
               {/* Day labels */}
-              <div className="flex flex-col mr-1 sm:mr-2">
+              <div className="flex flex-col mr-1 md:mr-2 lg:mr-3">
                 {days.map((day, index) => (
-                  <div key={day} className="h-2 sm:h-3 mb-px sm:mb-0.5 flex items-center">
+                  <div key={day} className="h-2 md:h-3 lg:h-3.5 mb-px md:mb-0.5 lg:mb-1 flex items-center">
                     {(index === 0 || index === 2 || index === 4 || index === 6) && (
-                      <span className="text-xs text-gray-500 w-4 sm:w-6 text-right pr-1">
+                      <span className="text-xs md:text-sm text-gray-500 w-4 md:w-6 lg:w-8 text-right pr-1">
                         {day}
                       </span>
                     )}
@@ -201,7 +201,7 @@ export default function Heatmap({ entries }: HeatmapProps) {
               </div>
               
               {/* Heatmap grid */}
-              <div className="flex gap-px sm:gap-0.5">
+              <div className="flex gap-px md:gap-0.5 lg:gap-1">
                 {weeks.map((week, weekIndex) => {
                   // Add extra spacing after weeks that end a month
                   const isMonthEnd = week.some(date => {
@@ -211,7 +211,7 @@ export default function Heatmap({ entries }: HeatmapProps) {
                   });
                   
                   return (
-                    <div key={weekIndex} className={`flex flex-col gap-px sm:gap-0.5 ${isMonthEnd ? 'mr-px sm:mr-1' : ''}`}>
+                    <div key={weekIndex} className={`flex flex-col gap-px md:gap-0.5 lg:gap-1 ${isMonthEnd ? 'mr-px md:mr-1 lg:mr-1.5' : ''}`}>
                       {week.map((date, dayIndex) => {
                         const intensity = getIntensity(date, entries);
                         const today = new Date();
@@ -220,8 +220,8 @@ export default function Heatmap({ entries }: HeatmapProps) {
                         return (
                           <div
                             key={`${weekIndex}-${dayIndex}`}
-                            className={`w-2 h-2 sm:w-3 sm:h-3 rounded-sm cursor-pointer transition-all duration-200 hover:ring-1 sm:hover:ring-2 hover:ring-gray-400 ${
-                              isToday ? 'ring-1 sm:ring-2 ring-blue-400' : ''
+                            className={`w-2 h-2 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 rounded-sm cursor-pointer transition-all duration-200 hover:ring-1 md:hover:ring-2 hover:ring-gray-400 ${
+                              isToday ? 'ring-1 md:ring-2 ring-blue-400' : ''
                             }`}
                             style={{
                               backgroundColor: getIntensityColor(intensity),
@@ -242,31 +242,31 @@ export default function Heatmap({ entries }: HeatmapProps) {
         </div>
         
         {/* Legend */}
-        <div className="flex justify-between items-center mt-4 sm:mt-6 text-xs sm:text-sm text-gray-500">
+        <div className="flex justify-between items-center mt-4 md:mt-6 lg:mt-8 text-xs md:text-sm lg:text-base text-gray-500">
           <span>Less</span>
-          <div className="flex gap-1 items-center">
+          <div className="flex gap-1 md:gap-1.5 lg:gap-2 items-center">
             <div 
-              className="w-2 h-2 sm:w-3 sm:h-3 rounded-sm" 
+              className="w-2 h-2 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 rounded-sm" 
               style={{ backgroundColor: '#ebedf0' }}
               title="No entries"
             ></div>
             <div 
-              className="w-2 h-2 sm:w-3 sm:h-3 rounded-sm" 
+              className="w-2 h-2 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 rounded-sm" 
               style={{ backgroundColor: '#9be9a8' }}
               title="1 day streak"
             ></div>
             <div 
-              className="w-2 h-2 sm:w-3 sm:h-3 rounded-sm" 
+              className="w-2 h-2 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 rounded-sm" 
               style={{ backgroundColor: '#40c463' }}
               title="2-3 day streak"
             ></div>
             <div 
-              className="w-2 h-2 sm:w-3 sm:h-3 rounded-sm" 
+              className="w-2 h-2 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 rounded-sm" 
               style={{ backgroundColor: '#30a14e' }}
               title="4-7 day streak"
             ></div>
             <div 
-              className="w-2 h-2 sm:w-3 sm:h-3 rounded-sm" 
+              className="w-2 h-2 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 rounded-sm" 
               style={{ backgroundColor: '#216e39' }}
               title="8+ day streak"
             ></div>
