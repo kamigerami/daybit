@@ -27,34 +27,34 @@ export default function RecentWords({ entries }: RecentWordsProps) {
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <div className="bg-white p-6 rounded-lg border shadow-sm">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4 text-center">
+      <div className="bg-white p-4 rounded-lg border shadow-sm">
+        <h2 className="text-xl font-semibold text-gray-800 mb-3 text-center">
           Recent Words
         </h2>
-        <div className="space-y-3">
+        <div className="space-y-2 max-h-60 overflow-y-auto">
           {recentEntries.map((entry, index) => (
             <div 
               key={entry.date}
-              className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
+              className={`flex items-center justify-between py-2 px-3 rounded-lg transition-colors ${
                 index === 0 
                   ? 'bg-green-50 border-l-4 border-green-500' 
                   : 'bg-gray-50 hover:bg-gray-100'
               }`}
             >
-              <div className="flex items-center gap-3">
-                <span className="text-lg">
+              <div className="flex items-center gap-2">
+                <span className="text-base">
                   {index === 0 ? '📅' : '📝'}
                 </span>
                 <div>
                   <div className="text-sm text-gray-600">
                     {formatDisplayDate(entry.date)}
-                    {index === 0 && (
+                    {entry.date === new Date().toISOString().split('T')[0] && (
                       <span className="ml-2 text-green-600 font-medium">Today</span>
                     )}
                   </div>
                 </div>
               </div>
-              <div className="font-semibold text-gray-800 text-lg">
+              <div className="font-semibold text-gray-800 text-base">
                 {entry.word}
               </div>
             </div>

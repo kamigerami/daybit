@@ -36,19 +36,19 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8 px-2 sm:px-4">
       <div className="max-w-6xl mx-auto">
         <Header />
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-          {/* Left column - Input and Recent Words */}
-          <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
+          {/* Top row - Input and Recent Words */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
             <InputForm onEntryAdded={loadEntries} />
             <RecentWords entries={entries} />
           </div>
           
-          {/* Right column - Heatmap */}
-          <div className="order-first lg:order-last">
+          {/* Bottom row - Full width Heatmap */}
+          <div className="w-full">
             <Heatmap entries={entries} />
           </div>
         </div>
