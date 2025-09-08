@@ -1,6 +1,6 @@
 'use client';
 
-import CalendarHeatmap from 'react-calendar-heatmap';
+import CalendarHeatmap, { type HeatmapValue } from 'react-calendar-heatmap';
 import 'react-calendar-heatmap/dist/styles.css';
 import '../styles/heatmap.css';
 import { type DayEntry } from '@/lib/storage';
@@ -74,7 +74,7 @@ export default function Heatmap({ entries }: HeatmapProps) {
   });
 
   // Custom class function for colors
-  const classForValue = (value: any) => {
+  const classForValue = (value: HeatmapValue | null) => {
     if (!value) {
       return 'color-empty';
     }
@@ -82,7 +82,7 @@ export default function Heatmap({ entries }: HeatmapProps) {
   };
 
   // Custom title function for tooltips
-  const titleForValue = (value: any) => {
+  const titleForValue = (value: HeatmapValue | null) => {
     // For react-calendar-heatmap, empty squares don't have a value but the library
     // handles this internally - we'll focus on valid values only
     if (!value || !value.date) {
@@ -111,7 +111,7 @@ export default function Heatmap({ entries }: HeatmapProps) {
     return `${formattedDate}\n${entry.word}${streak > 1 ? ` • ${streak} day streak` : ''}`;
   };
 
-  const handleMouseEnter = (event: React.MouseEvent, value: any) => {
+  const handleMouseEnter = (event: React.MouseEvent, value: HeatmapValue | null) => {
     // For empty squares, react-calendar-heatmap passes null value
     // We need to calculate the date from the square's position
     if (!value || !value.date) {
@@ -131,7 +131,7 @@ export default function Heatmap({ entries }: HeatmapProps) {
     
     setTooltipData({
       date: actualDate,
-      word: entry?.word,
+      word: value.word || entry?.word,
       streak,
       visible: true,
       x: rect.left + rect.width / 2,
