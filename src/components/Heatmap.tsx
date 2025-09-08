@@ -42,11 +42,11 @@ const calculateStreak = (date: Date, entries: DayEntry[]): number => {
   if (!currentEntry) return 0;
 
   let streak = 1;
-  let checkDate = new Date(date);
   
   // Count consecutive days backwards from current date
-  while (streak < 365) { // Limit to prevent infinite loops
-    checkDate.setDate(checkDate.getDate() - 1);
+  for (let i = 1; i < 365; i++) { // Limit to prevent infinite loops
+    const checkDate = new Date(date);
+    checkDate.setDate(date.getDate() - i);
     const checkDateStr = checkDate.toISOString().split('T')[0];
     const hasEntry = entries.some(e => e.date === checkDateStr);
     
